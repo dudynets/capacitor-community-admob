@@ -76,7 +76,7 @@ public class BannerExecutor extends Executor {
             } else {
                 // ADAPTIVE BANNER
                 mAdView.setAdSize(
-                    AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(contextSupplier.get(), (int) (defaultWidthPixels / density))
+                    AdSize.getLargeAnchoredAdaptiveBannerAdSize(contextSupplier.get(), (int) (defaultWidthPixels / density))
                 );
             }
 
