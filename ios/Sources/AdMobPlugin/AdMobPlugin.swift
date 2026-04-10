@@ -102,7 +102,7 @@ public class AdMobPlugin: CAPPlugin, CAPBridgedPlugin {
      *  https://developers.google.com/ad-manager/mobile-ads-sdk/ios/banner?hl=ja
      */
     @objc func showBanner(_ call: CAPPluginCall) {
-        let adUnitID = getAdId(call, "ca-app-pub-3940256099942544/6300978111")
+        let adUnitID = getAdId(call, "ca-app-pub-3940256099942544/2435281174")
         let request = self.GADRequestWithOption(call.getBool("npa") ?? false)
 
         DispatchQueue.main.async {
@@ -133,7 +133,7 @@ public class AdMobPlugin: CAPPlugin, CAPBridgedPlugin {
      *  https://developers.google.com/admob/ios/interstitial?hl=ja
      */
     @objc func prepareInterstitial(_ call: CAPPluginCall) {
-        let adUnitID = getAdId(call, "ca-app-pub-3940256099942544/1033173712")
+        let adUnitID = getAdId(call, "ca-app-pub-3940256099942544/4411468910")
         let request = self.GADRequestWithOption(call.getBool("npa") ?? false)
 
         DispatchQueue.main.async {
