@@ -37,7 +37,7 @@ class BannerExecutor: NSObject, BannerViewDelegate {
                     return rootViewController.view.frame.inset(by: rootViewController.view.safeAreaInsets)
                 }()
                 let viewWidth = frame.size.width
-                bannerSize = GADLargeAnchoredAdaptiveBannerAdSizeWithWidth(viewWidth)
+                bannerSize = largeAnchoredAdaptiveBanner(width: viewWidth)
             }
 
             self.bannerView = BannerView(adSize: bannerSize)
