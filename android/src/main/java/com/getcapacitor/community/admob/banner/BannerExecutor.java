@@ -78,10 +78,7 @@ public class BannerExecutor extends Executor {
                 bannerSize = adOptions.adSize.getSize();
             } else {
                 // ADAPTIVE BANNER
-                bannerSize = AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
-                    contextSupplier.get(),
-                    (int) (defaultWidthPixels / density)
-                );
+                bannerSize = AdSize.getLargeAnchoredAdaptiveBannerAdSize(contextSupplier.get(), (int) (defaultWidthPixels / density));
             }
 
             // Setup AdView Layout
