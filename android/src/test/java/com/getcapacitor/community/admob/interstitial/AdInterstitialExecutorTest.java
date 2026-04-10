@@ -17,10 +17,10 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.community.admob.helpers.AdViewIdHelper;
 import com.getcapacitor.community.admob.helpers.RequestHelper;
 import com.getcapacitor.community.admob.models.AdOptions;
+import com.google.android.gms.common.util.BiConsumer;
 import com.google.android.libraries.ads.mobile.sdk.common.AdLoadCallback;
 import com.google.android.libraries.ads.mobile.sdk.common.AdRequest;
 import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAd;
-import com.google.android.gms.common.util.BiConsumer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -142,9 +142,7 @@ class AdInterstitialExecutorTest {
             Runnable uiThreadRunnable = runnableArgumentCaptor.getValue();
             uiThreadRunnable.run();
 
-            interstitialAdMockedStatic.verify(() ->
-                InterstitialAd.load(adRequestCaptor.capture(), any())
-            );
+            interstitialAdMockedStatic.verify(() -> InterstitialAd.load(adRequestCaptor.capture(), any()));
 
             assertEquals(adRequestFromHelper, adRequestCaptor.getValue());
         }
@@ -155,9 +153,7 @@ class AdInterstitialExecutorTest {
             when(interstitialAdCallbackAndListenersMock.getInterstitialAdLoadCallback(pluginCallMock, notifierMock)).thenReturn(
                 interstitialAdLoadCallbackMock
             );
-            final ArgumentCaptor<AdLoadCallback> callbackArgumentCaptor = ArgumentCaptor.forClass(
-                AdLoadCallback.class
-            );
+            final ArgumentCaptor<AdLoadCallback> callbackArgumentCaptor = ArgumentCaptor.forClass(AdLoadCallback.class);
 
             sut.prepareInterstitial(pluginCallMock, notifierMock);
             verify(mockedActivity).runOnUiThread(runnableArgumentCaptor.capture());

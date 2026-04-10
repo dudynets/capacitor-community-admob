@@ -1,8 +1,8 @@
 package com.getcapacitor.community.admob;
 
 import android.Manifest;
-import android.content.pm.PackageManager;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
@@ -78,8 +78,9 @@ public class AdMob extends Plugin {
 
             // MobileAds.initialize() must be called on a background thread
             new Thread(() -> {
-                MobileAds.initialize(getContext(), config, initializationStatus -> {});
-            }).start();
+                MobileAds.initialize(getContext(), config, (initializationStatus) -> {});
+            })
+                .start();
 
             bannerExecutor.initialize();
             call.resolve();
@@ -203,7 +204,8 @@ public class AdMob extends Plugin {
      */
     private String getAdMobApplicationId() {
         try {
-            ApplicationInfo appInfo = getContext().getPackageManager()
+            ApplicationInfo appInfo = getContext()
+                .getPackageManager()
                 .getApplicationInfo(getContext().getPackageName(), PackageManager.GET_META_DATA);
             Bundle metaData = appInfo.metaData;
             if (metaData != null) {

@@ -20,6 +20,7 @@ import com.getcapacitor.community.admob.helpers.RequestHelper;
 import com.getcapacitor.community.admob.models.AdMobPluginError;
 import com.getcapacitor.community.admob.models.AdOptions;
 import com.getcapacitor.community.admob.models.Executor;
+import com.google.android.gms.common.util.BiConsumer;
 import com.google.android.libraries.ads.mobile.sdk.banner.AdSize;
 import com.google.android.libraries.ads.mobile.sdk.banner.AdView;
 import com.google.android.libraries.ads.mobile.sdk.banner.BannerAd;
@@ -27,7 +28,6 @@ import com.google.android.libraries.ads.mobile.sdk.banner.BannerAdEventCallback;
 import com.google.android.libraries.ads.mobile.sdk.banner.BannerAdRequest;
 import com.google.android.libraries.ads.mobile.sdk.common.AdLoadCallback;
 import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError;
-import com.google.android.gms.common.util.BiConsumer;
 
 public class BannerExecutor extends Executor {
 
@@ -229,13 +229,16 @@ public class BannerExecutor extends Executor {
                 final String adId = AdViewIdHelper.getFinalAdId(adOptions, logTag, contextSupplier.get());
                 AdSize bannerSize = adOptions.adSize.getSize();
                 final BannerAdRequest adRequest = RequestHelper.createBannerRequest(adOptions, adId, bannerSize);
-                mAdView.loadAd(adRequest, new AdLoadCallback<BannerAd>() {
-                    @Override
-                    public void onAdLoaded(@NonNull BannerAd bannerAd) {}
+                mAdView.loadAd(
+                    adRequest,
+                    new AdLoadCallback<BannerAd>() {
+                        @Override
+                        public void onAdLoaded(@NonNull BannerAd bannerAd) {}
 
-                    @Override
-                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {}
-                });
+                        @Override
+                        public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {}
+                    }
+                );
             });
     }
 
@@ -250,56 +253,65 @@ public class BannerExecutor extends Executor {
             .runOnUiThread(() -> {
                 final BannerAdRequest adRequest = RequestHelper.createBannerRequest(adOptions, adId, bannerSize);
 
-                mAdView.setAdEventCallback(new BannerAdEventCallback() {
-                    @Override
-                    public void onAdImpression() {
-                        notifyListeners(BannerAdPluginEvents.AdImpression.getWebEventName(), emptyObject);
-                    }
+                mAdView.setAdEventCallback(
+                    new BannerAdEventCallback() {
+                        @Override
+                        public void onAdImpression() {
+                            notifyListeners(BannerAdPluginEvents.AdImpression.getWebEventName(), emptyObject);
+                        }
 
-                    @Override
-                    public void onAdShowedFullScreenContent() {
-                        notifyListeners(BannerAdPluginEvents.Opened.getWebEventName(), emptyObject);
-                    }
+                        @Override
+                        public void onAdShowedFullScreenContent() {
+                            notifyListeners(BannerAdPluginEvents.Opened.getWebEventName(), emptyObject);
+                        }
 
-                    @Override
-                    public void onAdDismissedFullScreenContent() {
-                        notifyListeners(BannerAdPluginEvents.Closed.getWebEventName(), emptyObject);
+                        @Override
+                        public void onAdDismissedFullScreenContent() {
+                            notifyListeners(BannerAdPluginEvents.Closed.getWebEventName(), emptyObject);
+                        }
                     }
-                });
+                );
 
                 // Add the AdView to the view hierarchy.
                 mAdViewLayout.addView(mAdView);
 
                 // Start loading the ad.
-                mAdView.loadAd(adRequest, new AdLoadCallback<BannerAd>() {
-                    @Override
-                    public void onAdLoaded(@NonNull BannerAd bannerAd) {
-                        activitySupplier.get().runOnUiThread(() -> {
-                            final BannerAdSizeInfo sizeInfo = new BannerAdSizeInfo(mAdView);
+                mAdView.loadAd(
+                    adRequest,
+                    new AdLoadCallback<BannerAd>() {
+                        @Override
+                        public void onAdLoaded(@NonNull BannerAd bannerAd) {
+                            activitySupplier
+                                .get()
+                                .runOnUiThread(() -> {
+                                    final BannerAdSizeInfo sizeInfo = new BannerAdSizeInfo(mAdView);
 
-                            notifyListeners(BannerAdPluginEvents.SizeChanged.getWebEventName(), sizeInfo);
-                            notifyListeners(BannerAdPluginEvents.Loaded.getWebEventName(), emptyObject);
-                        });
+                                    notifyListeners(BannerAdPluginEvents.SizeChanged.getWebEventName(), sizeInfo);
+                                    notifyListeners(BannerAdPluginEvents.Loaded.getWebEventName(), emptyObject);
+                                });
+                        }
+
+                        @Override
+                        public void onAdFailedToLoad(@NonNull LoadAdError adError) {
+                            activitySupplier
+                                .get()
+                                .runOnUiThread(() -> {
+                                    if (mAdView != null) {
+                                        mViewGroup.removeView(mAdViewLayout);
+                                        mAdViewLayout.removeView(mAdView);
+                                        mAdView.destroy();
+                                        mAdView = null;
+                                    }
+
+                                    final BannerAdSizeInfo sizeInfo = new BannerAdSizeInfo(0, 0);
+                                    notifyListeners(BannerAdPluginEvents.SizeChanged.getWebEventName(), sizeInfo);
+
+                                    final AdMobPluginError adMobPluginError = new AdMobPluginError(adError);
+                                    notifyListeners(BannerAdPluginEvents.FailedToLoad.getWebEventName(), adMobPluginError);
+                                });
+                        }
                     }
-
-                    @Override
-                    public void onAdFailedToLoad(@NonNull LoadAdError adError) {
-                        activitySupplier.get().runOnUiThread(() -> {
-                            if (mAdView != null) {
-                                mViewGroup.removeView(mAdViewLayout);
-                                mAdViewLayout.removeView(mAdView);
-                                mAdView.destroy();
-                                mAdView = null;
-                            }
-
-                            final BannerAdSizeInfo sizeInfo = new BannerAdSizeInfo(0, 0);
-                            notifyListeners(BannerAdPluginEvents.SizeChanged.getWebEventName(), sizeInfo);
-
-                            final AdMobPluginError adMobPluginError = new AdMobPluginError(adError);
-                            notifyListeners(BannerAdPluginEvents.FailedToLoad.getWebEventName(), adMobPluginError);
-                        });
-                    }
-                });
+                );
 
                 // Add AdViewLayout top of the WebView
                 mViewGroup.addView(mAdViewLayout);

@@ -11,9 +11,9 @@ import com.getcapacitor.community.admob.helpers.RequestHelper;
 import com.getcapacitor.community.admob.models.AdMobPluginError;
 import com.getcapacitor.community.admob.models.AdOptions;
 import com.getcapacitor.community.admob.models.Executor;
+import com.google.android.gms.common.util.BiConsumer;
 import com.google.android.libraries.ads.mobile.sdk.common.AdRequest;
 import com.google.android.libraries.ads.mobile.sdk.rewardedinterstitial.RewardedInterstitialAd;
-import com.google.android.gms.common.util.BiConsumer;
 
 public class AdRewardInterstitialExecutor extends Executor {
 
