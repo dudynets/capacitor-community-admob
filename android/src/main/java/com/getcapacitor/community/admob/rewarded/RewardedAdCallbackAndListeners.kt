@@ -5,12 +5,14 @@ import com.getcapacitor.PluginCall
 import com.getcapacitor.community.admob.helpers.FullscreenPluginCallback
 import com.getcapacitor.community.admob.models.AdMobPluginError
 import com.getcapacitor.community.admob.models.AdOptions
-import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.OnUserEarnedRewardListener
-import com.google.android.gms.ads.rewarded.RewardItem
-import com.google.android.gms.ads.rewarded.RewardedAd
-import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
-import com.google.android.gms.ads.rewarded.ServerSideVerificationOptions
+import com.google.android.libraries.ads.mobile.sdk.common.AdLoadCallback
+import com.google.android.libraries.ads.mobile.sdk.common.FullScreenContentError
+import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError
+import com.google.android.libraries.ads.mobile.sdk.rewarded.OnUserEarnedRewardListener
+import com.google.android.libraries.ads.mobile.sdk.rewarded.RewardItem
+import com.google.android.libraries.ads.mobile.sdk.rewarded.RewardedAd
+import com.google.android.libraries.ads.mobile.sdk.rewarded.RewardedAdEventCallback
+import com.google.android.libraries.ads.mobile.sdk.rewarded.ServerSideVerificationOptions
 import com.google.android.gms.common.util.BiConsumer
 
 object RewardedAdCallbackAndListeners {
@@ -25,15 +27,26 @@ object RewardedAdCallbackAndListeners {
         }
     }
 
-    fun getRewardedAdLoadCallback(call: PluginCall, notifyListenersFunction: BiConsumer<String, JSObject>, adOptions: AdOptions): RewardedAdLoadCallback {
-        return object : RewardedAdLoadCallback() {
+    fun getRewardedAdLoadCallback(call: PluginCall, notifyListenersFunction: BiConsumer<String, JSObject>, adOptions: AdOptions): AdLoadCallback<RewardedAd> {
+        return object : AdLoadCallback<RewardedAd> {
             override fun onAdLoaded(ad: RewardedAd) {
                 val immersiveMode = call.getBoolean("immersiveMode")
                 ad.setImmersiveMode(immersiveMode ?: false)
 
                 AdRewardExecutor.mRewardedAd = ad
-                AdRewardExecutor.mRewardedAd.fullScreenContentCallback = FullscreenPluginCallback(
-                        RewardAdPluginEvents, notifyListenersFunction)
+                val fullscreenCallback = FullscreenPluginCallback(RewardAdPluginEvents, notifyListenersFunction)
+                AdRewardExecutor.mRewardedAd.adEventCallback = object : RewardedAdEventCallback {
+                    override fun onAdShowedFullScreenContent() {
+                        fullscreenCallback.onAdShowedFullScreenContent()
+                    }
+                    override fun onAdFailedToShowFullScreenContent(error: FullScreenContentError) {
+                        fullscreenCallback.onAdFailedToShowFullScreenContent(error)
+                    }
+                    override fun onAdDismissedFullScreenContent() {
+                        fullscreenCallback.onAdDismissedFullScreenContent()
+                    }
+                    override fun onAdImpression() {}
+                }
 
                 if(adOptions.ssvInfo.hasInfo){
                     val ssvOptions = ServerSideVerificationOptions.Builder()

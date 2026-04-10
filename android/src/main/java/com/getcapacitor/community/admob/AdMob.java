@@ -1,6 +1,9 @@
 package com.getcapacitor.community.admob;
 
 import android.Manifest;
+import android.content.pm.PackageManager;
+import android.content.pm.ApplicationInfo;
+import android.os.Bundle;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -15,10 +18,9 @@ import com.getcapacitor.community.admob.interstitial.AdInterstitialExecutor;
 import com.getcapacitor.community.admob.interstitial.InterstitialAdCallbackAndListeners;
 import com.getcapacitor.community.admob.rewarded.AdRewardExecutor;
 import com.getcapacitor.community.admob.rewardedinterstitial.AdRewardInterstitialExecutor;
-import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.RequestConfiguration;
-import com.google.android.gms.ads.initialization.InitializationStatus;
-import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
+import com.google.android.libraries.ads.mobile.sdk.MobileAds;
+import com.google.android.libraries.ads.mobile.sdk.common.RequestConfiguration;
+import com.google.android.libraries.ads.mobile.sdk.initialization.InitializationConfig;
 import org.json.JSONException;
 
 @CapacitorPlugin(
@@ -64,16 +66,21 @@ public class AdMob extends Plugin {
     // Initialize AdMob with appId
     @PluginMethod
     public void initialize(final PluginCall call) {
-        this.setRequestConfiguration(call);
-
         try {
-            MobileAds.initialize(
-                getContext(),
-                new OnInitializationCompleteListener() {
-                    @Override
-                    public void onInitializationComplete(InitializationStatus initializationStatus) {}
-                }
-            );
+            final RequestConfiguration requestConfiguration = this.buildRequestConfiguration(call);
+            final String applicationId = getAdMobApplicationId();
+
+            InitializationConfig.Builder configBuilder = new InitializationConfig.Builder(applicationId);
+            if (requestConfiguration != null) {
+                configBuilder.setRequestConfiguration(requestConfiguration);
+            }
+            final InitializationConfig config = configBuilder.build();
+
+            // MobileAds.initialize() must be called on a background thread
+            new Thread(() -> {
+                MobileAds.initialize(getContext(), config, initializationStatus -> {});
+            }).start();
+
             bannerExecutor.initialize();
             call.resolve();
         } catch (Exception ex) {
@@ -192,10 +199,27 @@ public class AdMob extends Plugin {
     }
 
     /**
+     * Reads the AdMob Application ID from AndroidManifest.xml meta-data tag.
+     */
+    private String getAdMobApplicationId() {
+        try {
+            ApplicationInfo appInfo = getContext().getPackageManager()
+                .getApplicationInfo(getContext().getPackageName(), PackageManager.GET_META_DATA);
+            Bundle metaData = appInfo.metaData;
+            if (metaData != null) {
+                return metaData.getString("com.google.android.gms.ads.APPLICATION_ID", "");
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            // fallback
+        }
+        return "";
+    }
+
+    /**
      * @see <a href="https://developers.google.com/admob/android/test-ads#enable_test_devices">Test Devices</a>
      * @see <a href="https://developers.google.com/admob/android/targeting">Target Settings</a>
      */
-    private void setRequestConfiguration(final PluginCall call) {
+    private RequestConfiguration buildRequestConfiguration(final PluginCall call) {
         // Testing Devices
         final boolean initializeForTesting = call.getBoolean("initializeForTesting", false);
         final JSArray testingDevices = initializeForTesting
@@ -248,15 +272,15 @@ public class AdMob extends Plugin {
         }
 
         try {
-            RequestConfiguration requestConfiguration = new RequestConfiguration.Builder()
+            return new RequestConfiguration.Builder()
                 .setTestDeviceIds(testingDevices.<String>toList())
                 .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT)
                 .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT)
                 .setMaxAdContentRating(MAX_AD_CONTENT_RATING)
                 .build();
-            MobileAds.setRequestConfiguration(requestConfiguration);
         } catch (JSONException error) {
             call.reject(error.toString());
+            return null;
         }
     }
 }

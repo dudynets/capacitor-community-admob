@@ -4,11 +4,8 @@ import android.app.Activity
 import android.content.Context
 import com.getcapacitor.JSObject
 import com.getcapacitor.PluginCall
-import com.google.android.gms.ads.FullScreenContentCallback
-import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.OnPaidEventListener
-import com.google.android.gms.ads.ResponseInfo
-import com.google.android.gms.ads.interstitial.InterstitialAd
+import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError
+import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAd
 import com.google.android.gms.common.util.BiConsumer
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -22,14 +19,11 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.Mockito.never
-import org.mockito.Mockito.spy
 import org.mockito.junit.jupiter.MockitoExtension
 
 @ExtendWith(MockitoExtension::class)
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 internal class InterstitialAdCallbackAndListenersTest {
-
-
 
     @Mock
     lateinit var context: Context
@@ -51,7 +45,6 @@ internal class InterstitialAdCallbackAndListenersTest {
 
     @Nested
     inner class InterstitialAdLoadCallback {
-
 
         @Nested
         inner class OnAdFailedToLoad {
@@ -147,15 +140,15 @@ internal class InterstitialAdCallbackAndListenersTest {
             }
 
             @Test
-            fun `onAdLoaded should assign the content callback`() {
+            fun `onAdLoaded should assign the event callback`() {
                 val interstitialStub = InterstitialAdStub()
-                assertNull(interstitialStub.fullScreenContentCallback)
+                assertNull(interstitialStub.adEventCallback)
 
                 val listener = InterstitialAdCallbackAndListeners.getInterstitialAdLoadCallback(pluginCall, notifierMock)
                 // ACt
                 listener.onAdLoaded(interstitialStub)
 
-                assertNotNull(interstitialStub.fullScreenContentCallback)
+                assertNotNull(interstitialStub.adEventCallback)
             }
         }
 

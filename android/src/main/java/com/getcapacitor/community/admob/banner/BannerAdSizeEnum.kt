@@ -1,6 +1,6 @@
 package com.getcapacitor.community.admob.banner
 
-import com.google.android.gms.ads.AdSize
+import com.google.android.libraries.ads.mobile.sdk.banner.AdSize
 
 /**
  * https://developers.google.com/admob/android/banner#banner_sizes

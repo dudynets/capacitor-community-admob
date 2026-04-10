@@ -7,11 +7,12 @@ import com.getcapacitor.PluginCall
 import com.getcapacitor.community.admob.helpers.FullscreenPluginCallback
 import com.getcapacitor.community.admob.models.AdOptions
 import com.getcapacitor.community.admob.rewarded.models.SsvInfo
-import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.rewarded.RewardItem
-import com.google.android.gms.ads.rewarded.RewardedAd
-import com.google.android.gms.ads.rewarded.ServerSideVerificationOptions
+import com.google.android.libraries.ads.mobile.sdk.common.AdLoadCallback
+import com.google.android.libraries.ads.mobile.sdk.common.FullScreenContentError
+import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError
+import com.google.android.libraries.ads.mobile.sdk.rewarded.RewardItem
+import com.google.android.libraries.ads.mobile.sdk.rewarded.RewardedAd
+import com.google.android.libraries.ads.mobile.sdk.rewarded.ServerSideVerificationOptions
 import com.google.android.gms.common.util.BiConsumer
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -43,7 +44,7 @@ internal class RewardedAdCallbackAndListenersTest {
     @Mock
     lateinit var pluginCall: PluginCall
 
-    private lateinit var listener: com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
+    private lateinit var listener: AdLoadCallback<RewardedAd>
 
     @BeforeEach
     fun beforeEach() {
@@ -241,11 +242,10 @@ internal class RewardedAdCallbackAndListenersTest {
 
     }
 
-    // TODO: JUST CHECK CALL CREATION
     @Nested
     inner class FullScreenContentCallback {
         private lateinit var argumentCaptor: ArgumentCaptor<JSObject>
-        private lateinit var listener: com.google.android.gms.ads.FullScreenContentCallback
+        private lateinit var listener: FullscreenPluginCallback
 
         @BeforeEach
         fun beforeEach() {
@@ -274,12 +274,12 @@ internal class RewardedAdCallbackAndListenersTest {
             fun `onAdFailedToShowFullScreenContent call FailedToShow event listener `() {
                 var wantedReason = "This is the reason"
                 var wantedErrorCode = 1
-                var adErrorMock = Mockito.mock(AdError::class.java);
-                Mockito.`when`(adErrorMock.code).thenReturn(wantedErrorCode)
-                Mockito.`when`(adErrorMock.message).thenReturn(wantedReason)
+                var errorMock = Mockito.mock(FullScreenContentError::class.java);
+                Mockito.`when`(errorMock.code).thenReturn(wantedErrorCode)
+                Mockito.`when`(errorMock.message).thenReturn(wantedReason)
 
                 // ACt
-                listener.onAdFailedToShowFullScreenContent(adErrorMock)
+                listener.onAdFailedToShowFullScreenContent(errorMock)
 
                 Mockito.verify(notifierMock).accept(
                     ArgumentMatchers.eq(RewardAdPluginEvents.FailedToShow),

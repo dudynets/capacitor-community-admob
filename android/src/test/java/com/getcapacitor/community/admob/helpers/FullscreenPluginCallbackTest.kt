@@ -2,8 +2,7 @@ package com.getcapacitor.community.admob.helpers
 
 import com.getcapacitor.JSObject
 import com.getcapacitor.community.admob.models.LoadPluginEventNames
-import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.FullScreenContentCallback
+import com.google.android.libraries.ads.mobile.sdk.common.FullScreenContentError
 import com.google.android.gms.common.util.BiConsumer
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.extension.ExtendWith
@@ -30,7 +29,7 @@ internal class FullscreenPluginCallbackTest {
     lateinit var  notifierMock: BiConsumer<String, JSObject>
 
     private lateinit var argumentCaptor: ArgumentCaptor<JSObject>
-    private lateinit var  sut: FullScreenContentCallback
+    private lateinit var  sut: FullscreenPluginCallback
 
     @BeforeEach
     fun beforeEach() {
@@ -54,12 +53,12 @@ internal class FullscreenPluginCallbackTest {
         fun `onAdFailedToShowFullScreenContent call FailedToShow event listener `() {
             val wantedReason = "This is the reason"
             val wantedErrorCode = 1
-            val adErrorMock = Mockito.mock(AdError::class.java);
-            Mockito.`when`(adErrorMock.code).thenReturn(wantedErrorCode)
-            Mockito.`when`(adErrorMock.message).thenReturn(wantedReason)
+            val errorMock = Mockito.mock(FullScreenContentError::class.java);
+            Mockito.`when`(errorMock.code).thenReturn(wantedErrorCode)
+            Mockito.`when`(errorMock.message).thenReturn(wantedReason)
 
             // ACt
-            sut.onAdFailedToShowFullScreenContent(adErrorMock)
+            sut.onAdFailedToShowFullScreenContent(errorMock)
 
             Mockito.verify(notifierMock).accept(ArgumentMatchers.eq(LoadPluginObject.FailedToShow), argumentCaptor.capture())
             val emittedError = argumentCaptor.value

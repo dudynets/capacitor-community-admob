@@ -12,7 +12,7 @@ import android.app.Activity;
 import android.content.Context;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.PluginCall;
-import com.google.android.gms.ads.rewarded.RewardedAd;
+import com.google.android.libraries.ads.mobile.sdk.rewarded.RewardedAd;
 import com.google.android.gms.common.util.BiConsumer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

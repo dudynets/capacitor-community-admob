@@ -10,8 +10,8 @@ import com.getcapacitor.community.admob.helpers.RequestHelper;
 import com.getcapacitor.community.admob.models.AdMobPluginError;
 import com.getcapacitor.community.admob.models.AdOptions;
 import com.getcapacitor.community.admob.models.Executor;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.interstitial.InterstitialAd;
+import com.google.android.libraries.ads.mobile.sdk.common.AdRequest;
+import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAd;
 import com.google.android.gms.common.util.BiConsumer;
 
 public class AdInterstitialExecutor extends Executor {
@@ -39,11 +39,9 @@ public class AdInterstitialExecutor extends Executor {
             activitySupplier
                 .get()
                 .runOnUiThread(() -> {
-                    final AdRequest adRequest = RequestHelper.createRequest(adOptions);
-                    final String id = AdViewIdHelper.getFinalAdId(adOptions, adRequest, logTag, contextSupplier.get());
+                    final String id = AdViewIdHelper.getFinalAdId(adOptions, logTag, contextSupplier.get());
+                    final AdRequest adRequest = RequestHelper.createRequest(adOptions, id);
                     InterstitialAd.load(
-                        activitySupplier.get(),
-                        id,
                         adRequest,
                         adCallbackAndListeners.getInterstitialAdLoadCallback(call, notifyListenersFunction)
                     );

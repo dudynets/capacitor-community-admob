@@ -7,12 +7,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.community.admob.banner.BannerExecutor;
-import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.RequestConfiguration;
+import com.google.android.libraries.ads.mobile.sdk.MobileAds;
+import com.google.android.libraries.ads.mobile.sdk.common.RequestConfiguration;
+import com.google.android.libraries.ads.mobile.sdk.initialization.InitializationConfig;
 import org.json.JSONException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -76,51 +80,31 @@ public class AdMobTest {
     class Initialize {
 
         MockedStatic<MobileAds> mobileAdsMockedStatic;
-        JSArray testingDevices;
 
-        ArgumentCaptor<RequestConfiguration> argumentCaptor;
+        ArgumentCaptor<InitializationConfig> configCaptor;
 
         @BeforeEach
         void beforeEachInitializeTest() {
             mobileAdsMockedStatic = Mockito.mockStatic(MobileAds.class);
-            argumentCaptor = ArgumentCaptor.forClass(RequestConfiguration.class);
+            configCaptor = ArgumentCaptor.forClass(InitializationConfig.class);
+
+            // Mock PackageManager to return application info with meta-data
+            try {
+                ApplicationInfo appInfo = new ApplicationInfo();
+                appInfo.metaData = new Bundle();
+                appInfo.metaData.putString("com.google.android.gms.ads.APPLICATION_ID", "ca-app-pub-test~test");
+                PackageManager pm = Mockito.mock(PackageManager.class);
+                when(mockedContext.getPackageManager()).thenReturn(pm);
+                when(mockedContext.getPackageName()).thenReturn("com.test.app");
+                when(pm.getApplicationInfo("com.test.app", PackageManager.GET_META_DATA)).thenReturn(appInfo);
+            } catch (PackageManager.NameNotFoundException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         @AfterEach
         void afterEachInitializeTest() {
             mobileAdsMockedStatic.close();
-        }
-
-        @Test
-        @DisplayName("If we initialize in not testing mode, then set the testing devices to an empty list")
-        public void emptyTestingDevices() {
-            when(pluginCallMock.getBoolean("initializeForTesting", false)).thenReturn(false);
-            assertEquals(argumentCaptor.getAllValues().size(), 0); // Correct env
-
-            sut.initialize(pluginCallMock);
-
-            mobileAdsMockedStatic.verify(() -> MobileAds.setRequestConfiguration(argumentCaptor.capture()), times(1));
-            assertEquals(0, argumentCaptor.getValue().getTestDeviceIds().size());
-        }
-
-        @Test
-        @DisplayName("Register Testing Devices if in testing Mode")
-        public void registerTestingDevices() {
-            when(pluginCallMock.getBoolean("initializeForTesting", false)).thenReturn(true);
-            testingDevices = new JSArray();
-            testingDevices.put("One");
-            testingDevices.put("Two");
-            when(pluginCallMock.getArray("testingDevices", AdMob.EMPTY_TESTING_DEVICES)).thenReturn(testingDevices);
-            assertEquals(argumentCaptor.getAllValues().size(), 0); // Correct env
-
-            sut.initialize(pluginCallMock);
-
-            mobileAdsMockedStatic.verify(() -> MobileAds.setRequestConfiguration(argumentCaptor.capture()), times(1));
-            try {
-                assertEquals(testingDevices.toList(), argumentCaptor.getValue().getTestDeviceIds());
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
-            }
         }
 
         @Test

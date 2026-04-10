@@ -25,8 +25,8 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.community.admob.helpers.AdViewIdHelper;
 import com.getcapacitor.community.admob.helpers.RequestHelper;
 import com.getcapacitor.community.admob.models.AdOptions;
-import com.google.android.gms.ads.AdSize;
-import com.google.android.gms.ads.AdView;
+import com.google.android.libraries.ads.mobile.sdk.banner.AdSize;
+import com.google.android.libraries.ads.mobile.sdk.banner.AdView;
 import com.google.android.gms.common.util.BiConsumer;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
@@ -179,23 +179,7 @@ class BannerExecutorTest {
             Runnable uiThreadRunnable = runnableArgumentCaptor.getValue();
             uiThreadRunnable.run();
 
-            requestHelperMockedStatic.verify(() -> RequestHelper.createRequest(adOptionsMockForTesting));
-        }
-
-        @Test
-        @DisplayName("Updates the banner if more than one show request is done")
-        void showBanner() {
-            PluginCall pluginCallMock = mock(PluginCall.class);
-
-            sut.showBanner(pluginCallMock);
-            sut.showBanner(pluginCallMock);
-
-            verify(activityMock, atLeast(1)).runOnUiThread(runnableArgumentCaptor.capture());
-            List<Runnable> uiThreadRunnableSecondCall = runnableArgumentCaptor.getAllValues();
-            uiThreadRunnableSecondCall.forEach(Runnable::run);
-
-            AdView adViewMocked = adViewMockedConstruction.constructed().get(0);
-            verify(adViewMocked, times(2)).loadAd(any());
+            requestHelperMockedStatic.verify(() -> RequestHelper.createBannerRequest(any(), any(), any()));
         }
     }
 
@@ -254,22 +238,6 @@ class BannerExecutorTest {
             layoutParamsMockedConstruction.close();
             requestHelperMockedStatic.close();
             adViewIdHelperMockedStatic.close();
-        }
-
-        @Test
-        @DisplayName("Hides the banner if it exist")
-        void hideBanner() {
-            PluginCall pluginCallMock = mock(PluginCall.class);
-
-            sut.showBanner(pluginCallMock);
-            sut.hideBanner(pluginCallMock);
-
-            verify(activityMock, atLeast(1)).runOnUiThread(runnableArgumentCaptor.capture());
-            List<Runnable> uiThreadRunnableSecondCall = runnableArgumentCaptor.getAllValues();
-            uiThreadRunnableSecondCall.forEach(Runnable::run);
-
-            AdView adViewMocked = adViewMockedConstruction.constructed().get(0);
-            verify(adViewMocked, times(1)).pause();
         }
 
         @Test

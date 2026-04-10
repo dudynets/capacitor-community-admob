@@ -4,20 +4,34 @@ import com.getcapacitor.JSObject
 import com.getcapacitor.PluginCall
 import com.getcapacitor.community.admob.helpers.FullscreenPluginCallback
 import com.getcapacitor.community.admob.models.AdMobPluginError
-import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.interstitial.InterstitialAd
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
+import com.google.android.libraries.ads.mobile.sdk.common.AdLoadCallback
+import com.google.android.libraries.ads.mobile.sdk.common.FullScreenContentError
+import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError
+import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAd
+import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAdEventCallback
 import com.google.android.gms.common.util.BiConsumer
 
 object InterstitialAdCallbackAndListeners {
 
     fun getInterstitialAdLoadCallback(call: PluginCall,
                                       notifyListenersFunction: BiConsumer<String, JSObject>,
-    ): InterstitialAdLoadCallback {
-        return object : InterstitialAdLoadCallback() {
+    ): AdLoadCallback<InterstitialAd> {
+        return object : AdLoadCallback<InterstitialAd> {
             override fun onAdLoaded(ad: InterstitialAd) {
                 val immersiveMode = call.getBoolean("immersiveMode")
-                ad.fullScreenContentCallback = FullscreenPluginCallback(InterstitialAdPluginPluginEvent, notifyListenersFunction)
+                val fullscreenCallback = FullscreenPluginCallback(InterstitialAdPluginPluginEvent, notifyListenersFunction)
+                ad.adEventCallback = object : InterstitialAdEventCallback {
+                    override fun onAdShowedFullScreenContent() {
+                        fullscreenCallback.onAdShowedFullScreenContent()
+                    }
+                    override fun onAdFailedToShowFullScreenContent(error: FullScreenContentError) {
+                        fullscreenCallback.onAdFailedToShowFullScreenContent(error)
+                    }
+                    override fun onAdDismissedFullScreenContent() {
+                        fullscreenCallback.onAdDismissedFullScreenContent()
+                    }
+                    override fun onAdImpression() {}
+                }
                 ad.setImmersiveMode(immersiveMode ?: false)
 
                 AdInterstitialExecutor.interstitialAd = ad
