@@ -87,6 +87,13 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
 
+// Exclude the old play-services-ads pulled in transitively, which conflicts with Next-Gen SDK
+configurations.all {
+    exclude group: 'com.google.android.gms', module: 'play-services-ads'
+    exclude group: 'com.google.android.gms', module: 'play-services-ads-lite'
+    exclude group: 'com.google.android.gms', module: 'play-services-ads-api'
+}
+
 // Allow to run unit test with  ./gradlew test
 tasks.withType(Test) {
     useJUnitPlatform()

@@ -49,7 +49,7 @@ object RewardedAdCallbackAndListeners {
                 }
 
                 if(adOptions.ssvInfo.hasInfo){
-                    val ssvOptionsBuilder = ServerSideVerificationOptions.builder()
+                    val ssvOptionsBuilder = ServerSideVerificationOptions.Builder()
                     adOptions.ssvInfo.customData?.let {
                         ssvOptionsBuilder.setCustomData(it)
                     }
