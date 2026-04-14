@@ -45,7 +45,7 @@ object RewardedInterstitialAdCallbackAndListeners {
                 }
 
                 val adInfo = JSObject()
-                adInfo.put("adUnitId", ad.adUnitId)
+                adInfo.put("adUnitId", call.getString("adId", ""))
                 call.resolve(adInfo)
 
                 notifyListenersFunction.accept(RewardInterstitialAdPluginEvents.Loaded, adInfo)

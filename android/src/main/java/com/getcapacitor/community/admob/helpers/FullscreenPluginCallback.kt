@@ -14,7 +14,7 @@ class FullscreenPluginCallback(private val loadPluginObject: LoadPluginEventName
     }
 
     fun onAdFailedToShowFullScreenContent(error: FullScreenContentError) {
-        val adMobError = AdMobPluginError(error.code, error.message ?: "Unknown error")
+        val adMobError = AdMobPluginError(error.code.ordinal, error.message ?: "Unknown error")
         notifyListenersFunction.accept(
                 loadPluginObject.FailedToShow, adMobError
         )

@@ -11,5 +11,5 @@ data class AdMobPluginError(val code: Int, val message: String) : JSObject() {
         super.put("code", this.code)
         super.put("message", this.message)
     }
-    constructor(adError: LoadAdError): this(adError.code, adError.message ?: "Unknown error")
+    constructor(adError: LoadAdError): this(adError.code.ordinal, adError.message ?: "Unknown error")
 }

@@ -49,19 +49,19 @@ object RewardedAdCallbackAndListeners {
                 }
 
                 if(adOptions.ssvInfo.hasInfo){
-                    val ssvOptions = ServerSideVerificationOptions.Builder()
+                    val ssvOptionsBuilder = ServerSideVerificationOptions.builder()
                     adOptions.ssvInfo.customData?.let {
-                        ssvOptions.setCustomData(it)
+                        ssvOptionsBuilder.setCustomData(it)
                     }
 
                     adOptions.ssvInfo.userId?.let {
-                        ssvOptions.setUserId(it)
+                        ssvOptionsBuilder.setUserId(it)
                     }
-                    AdRewardExecutor.mRewardedAd.setServerSideVerificationOptions(ssvOptions.build())
+                    AdRewardExecutor.mRewardedAd.setServerSideVerificationOptions(ssvOptionsBuilder.build())
                 }
 
                 val adInfo = JSObject()
-                adInfo.put("adUnitId", ad.adUnitId)
+                adInfo.put("adUnitId", call.getString("adId", ""))
                 call.resolve(adInfo)
 
                 notifyListenersFunction.accept(RewardAdPluginEvents.Loaded, adInfo)
